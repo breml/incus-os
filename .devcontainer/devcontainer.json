@@ -1,0 +1,88 @@
+{
+  "name": "incus-os",
+  "image": "incus-os-devcontainer",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "766b.go-outliner",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode.makefile-tools",
+        "github.vscode-github-actions",
+        "davidanson.vscode-markdownlint",
+        "shardulm94.trailing-spaces",
+        "Gruntfuggly.todo-tree",
+        "casualjim.gotemplate"
+      ],
+      "settings": {
+        "files.insertFinalNewline": true,
+        "go.goroot": "/usr/local/go",
+        "go.gopath": "/go",
+        "go.lintTool": "golangci-lint",
+        "go.lintOnSave": "package",
+        "go.lintFlags": [ "--fast" ],
+        "go.useLanguageServer": true,
+        "goOutliner.extendExplorerTab": true,
+        "gopls": {
+          "formatting.gofumpt": true,
+          "formatting.local": "github.com/lxc/incus-os/incus-osd",
+          "ui.diagnostic.staticcheck": false
+        },
+        "[go]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "[go.mod]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "search.exclude": {
+          "**/.git": true,
+          "**/bin": true,
+          "**/dist": true,
+          "**/_gen.go": true
+        },
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+              "path": "/bin/bash"
+          },
+          "fish": {
+              "path": "/bin/fish"
+          },
+          "zsh": {
+              "path": "/bin/zsh"
+          }
+        }
+      }
+    }
+  },
+
+  "initializeCommand": "${localWorkspaceFolder}/.devcontainer/build.sh",
+
+  // TODO: move to separate script, embed in container and execute it here.
+  "postCreateCommand": "cd incus-osd && go mod download && sudo rm -f /run/dbus/pid && sudo dbus-daemon --system",
+
+  "mounts": [
+    "source=incus_os_devcontainer_cache,target=/home/vscode/.cache,type=volume",
+    "source=incus_os_devcontainer_goroot,target=/go,type=volume",
+    "source=/var/lib/incus/unix.socket,target=/var/lib/incus/unix.socket,type=bind"
+  ],
+
+  "runArgs": [
+    "--privileged",
+    "-u",
+    "vscode",
+    "--cap-add=SYS_PTRACE",
+    "--security-opt",
+    "seccomp=unconfined",
+    "-v", "${env:HOME}/.ssh:/home/vscode/.ssh:ro",
+    "--name", "${localEnv:USER}_incus_os_devcontainer"
+  ],
+
+  "remoteUser": "vscode"
+}
